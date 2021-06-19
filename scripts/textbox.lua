@@ -102,7 +102,7 @@ end
 end
 
 function textboxClass_inputFinished(me)
-	return not me.inputActive and me.inputActive
+	return not me.inputActive and me.lastInputActive
 end
 
 function textboxClass_checkMouseInRect(me)

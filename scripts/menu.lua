@@ -206,6 +206,7 @@ function menu_draw(dt)
 			if UiTextButton("Close" , 195, 40) then
 				menuOpened = false
 				rebinding = nil
+				thrusterClass.power = tonumber(powerTextBox.value)
 			end
 			
 			UiTranslate(210, 0)
