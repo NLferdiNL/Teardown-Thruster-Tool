@@ -16,8 +16,9 @@ function tableToText(inputTable, loopThroughTables)
 	return returnString
 end
 
-function roundToTwoDecimals(a) --TODO: Make a better, generic version with more decimal points.
-	return math.floor(a * 100)/100
+function roundToTwoDecimals(a) -- To support older mods incase I update the utils.lua
+	--return math.floor(a * 100)/100
+	return roundToDecimal(a, 2)
 end
 
 function rndVec(length)
@@ -27,6 +28,15 @@ end
 
 function VecDir(a, b)
 	return VecNormalize(VecSub(b, a))
+end
+
+function roundToDecimal(num, numDecimalPlaces)
+	local mult = 10^(numDecimalPlaces or 0)
+	return math.floor(num * mult + 0.5) / mult
+end
+
+function VecRound(vec, numDecimalPlaces)
+	return Vec(round(vec[1], numDecimalPlaces), round(vec[2], numDecimalPlaces), round(vec[3], numDecimalPlaces))
 end
 
 function round(num)

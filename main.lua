@@ -10,6 +10,7 @@ thrusterClass = {
 	localPosition = nil,
 	localNormal = nil,
 	localInvertedNormal = nil,
+	localSpriteLookPos = nil,
 	power = 100,
 	toggle = false,
 	toggledOn = false,
@@ -22,6 +23,8 @@ local activeThrusters = {}
 
 local thrusterSprite = nil
 local toolDown = false
+
+local debugConsoleNeeded = true
 
 local screenCenter = { x = 0, y = 0 }
 
@@ -160,6 +163,10 @@ end
 -- UI Functions (excludes sound specific functions)
 
 function drawUI(dt)
+	if debugConsoleNeeded then
+		return
+	end
+
 	if (#activeThrusters <= 0 and GetString("game.player.tool") ~= "nlthrustertool") or isMenuOpen() then
 		return
 	end
@@ -215,9 +222,31 @@ function createThrusterAtLookPos()
 	newThruster.parentBody = shapeBody
 	newThruster.localPosition = TransformToLocalPoint(bodyTransform, hitPoint)
 	newThruster.localNormal = TransformToLocalPoint(bodyTransform, worldSpaceNormal)
+	newThruster.localSpriteLookDir = getSpriteLookDir(newThruster)
+	
+	DebugPrint("Look Pos: " .. VecToString(newThruster.localSpriteLookDir))
 	
 	return newThruster
 end
+
+function getSpriteLookDir(thruster)
+	local localNormal = VecRound(VecDir(thruster.localPosition, thruster.localNormal))
+	
+	DebugPrint("Local normal: " .. VecToString(localNormal))
+	
+	local x = localNormal[1]
+	local y = localNormal[2]
+	local z = localNormal[3]
+	
+	if x == 1 or x == -1 or y == 1 or y == -1 then
+		return Vec(0, 1, 0)
+	elseif z == 1 or z == -1 then
+		return Vec(0, 1, 0)
+	end
+	
+	return nil
+end
+
 
 -- World Sound functions
 
@@ -290,8 +319,6 @@ function drawThrusterSprite(thruster)
 		
 		local normalizedNormal = VecDir(worldPos, worldSpaceNormal)
 		
-		local spritePos = VecAdd(worldPos, VecScale(normalizedNormal, 0.25 / 2))
-		
 		--local vecA = worldPos
 		--local vecB = worldSpaceNormal
 		
@@ -305,7 +332,17 @@ function drawThrusterSprite(thruster)
 		
 		--DrawSprite(thrusterSprite, thrusterTransform, 0.3, 0.25, 1, 1, 1, 1, true, false)
 		
-		DrawLine(worldPos, VecAdd(worldPos, normalizedNormal))
+		--[[if thruster.localSpriteLookDir == nil then
+			DrawLine(worldPos, VecAdd(worldPos, normalizedNormal))
+		else
+			local spritePos = VecAdd(worldPos, VecScale(normalizedNormal, 0.25 / 2))
+			
+			local worldSpriteLookAtPos = TransformToParentPoint(bodyTransform, VecAdd(spritePos, thruster.localSpriteLookDir))
+			
+			local thrusterTransform = Transform(spritePos, QuatLookAt(spritePos, worldSpriteLookAtPos))
+			
+			DrawSprite(thrusterSprite, thrusterTransform, 0.3, 0.25, 1, 1, 1, 1, true, false)
+		end]]--
 	end
 end
 
