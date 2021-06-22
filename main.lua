@@ -222,31 +222,9 @@ function createThrusterAtLookPos()
 	newThruster.parentBody = shapeBody
 	newThruster.localPosition = TransformToLocalPoint(bodyTransform, hitPoint)
 	newThruster.localNormal = TransformToLocalPoint(bodyTransform, worldSpaceNormal)
-	newThruster.localSpriteLookDir = getSpriteLookDir(newThruster)
-	
-	DebugPrint("Look Pos: " .. VecToString(newThruster.localSpriteLookDir))
 	
 	return newThruster
 end
-
-function getSpriteLookDir(thruster)
-	local localNormal = VecRound(VecDir(thruster.localPosition, thruster.localNormal))
-	
-	DebugPrint("Local normal: " .. VecToString(localNormal))
-	
-	local x = localNormal[1]
-	local y = localNormal[2]
-	local z = localNormal[3]
-	
-	if x == 1 or x == -1 or y == 1 or y == -1 then
-		return Vec(0, 1, 0)
-	elseif z == 1 or z == -1 then
-		return Vec(0, 1, 0)
-	end
-	
-	return nil
-end
-
 
 -- World Sound functions
 
@@ -332,17 +310,7 @@ function drawThrusterSprite(thruster)
 		
 		--DrawSprite(thrusterSprite, thrusterTransform, 0.3, 0.25, 1, 1, 1, 1, true, false)
 		
-		--[[if thruster.localSpriteLookDir == nil then
-			DrawLine(worldPos, VecAdd(worldPos, normalizedNormal))
-		else
-			local spritePos = VecAdd(worldPos, VecScale(normalizedNormal, 0.25 / 2))
-			
-			local worldSpriteLookAtPos = TransformToParentPoint(bodyTransform, VecAdd(spritePos, thruster.localSpriteLookDir))
-			
-			local thrusterTransform = Transform(spritePos, QuatLookAt(spritePos, worldSpriteLookAtPos))
-			
-			DrawSprite(thrusterSprite, thrusterTransform, 0.3, 0.25, 1, 1, 1, 1, true, false)
-		end]]--
+		DrawLine(worldPos, VecAdd(worldPos, normalizedNormal))
 	end
 end
 
