@@ -24,7 +24,7 @@ local activeThrusters = {}
 local thrusterSprite = nil
 local toolDown = false
 
-local debugConsoleNeeded = true
+local debugConsoleNeeded = false
 
 local screenCenter = { x = 0, y = 0 }
 
