@@ -290,6 +290,14 @@ end
 
 function drawThrusterSprite(thruster)
 	if thruster ~= nil then
+		--[[--Attempt 1
+		
+		local halfWayRot = QuatLookAt(halfWayPos, worldSpaceNormal)
+		
+		local halfwayTransform = Transform(halfWayPos, halfWayRot)
+		
+		local offPos = TransformToParentPoint(halfwayTransform, Vec(-0.5, 0, 0))--]]--
+	
 		local bodyTransform = GetBodyTransform(thruster.parentBody)
 	
 		local worldPos = TransformToParentPoint(bodyTransform, thruster.localPosition)
@@ -297,20 +305,46 @@ function drawThrusterSprite(thruster)
 		
 		local normalizedNormal = VecDir(worldPos, worldSpaceNormal)
 		
-		--local vecA = worldPos
-		--local vecB = worldSpaceNormal
+		local localNormalizedNormal = VecDir(thruster.localPosition, thruster.localNormal)
 		
-		--local middlePoint = Vec((vecA[1] + vecB[1]) / 2, 0, (vecA[3] + vecB[3]) / 2)
+		localNormalizedNormal[1] = round(localNormalizedNormal[1])
+		localNormalizedNormal[2] = round(localNormalizedNormal[2])
+		localNormalizedNormal[3] = round(localNormalizedNormal[3])
 		
-		--https://math.stackexchange.com/questions/995659/given-two-points-find-another-point-a-perpendicular-distance-away-from-the-midp
+		local localOffsetVec = Vec(0, 0, -0.25)
 		
-		--local quatLookAtTarget = VecAdd(worldPos, lookAtOffset)
+		DebugPrint(VecToString(localNormalizedNormal))
 		
-		--local thrusterTransform = Transform(spritePos, QuatLookAt(spritePos, quatLookAtTarget))
+		if localNormalizedNormal[1] == -1 then
+			localOffsetVec[3] = 0.25
+		elseif localNormalizedNormal[3] == -1 then
+			localOffsetVec[1] = -0.25
+			localOffsetVec[3] = 0
+		elseif localNormalizedNormal[3] == 1 then
+			localOffsetVec[1] = 0.25
+			localOffsetVec[3] = 0
+		end
 		
-		--DrawSprite(thrusterSprite, thrusterTransform, 0.3, 0.25, 1, 1, 1, 1, true, false)
+		local localPosOffsetted = VecAdd(thruster.localPosition, localOffsetVec)
 		
-		DrawLine(worldPos, VecAdd(worldPos, normalizedNormal))
+		local offsetThruster = TransformToParentPoint(bodyTransform, localPosOffsetted)
+		
+		local thrusterLookAtPos = VecAdd(offsetThruster, VecScale(normalizedNormal, 0.25 / 2))
+		
+		local halfWayPos = VecLerp(worldPos, worldSpaceNormal, 0.25 / 2)
+		
+		local thrusterTransform = Transform(halfWayPos, QuatLookAt(halfWayPos, thrusterLookAtPos))
+		
+		DrawSprite(thrusterSprite, thrusterTransform, 0.3, 0.25, 1, 1, 1, 1, true, false)--]]--
+		
+		DrawLine(worldPos, offsetThruster)
+		DrawLine(offsetThruster, thrusterLookAtPos)
+		DrawLine(worldPos, worldSpaceNormal)
+		DrawLine(halfWayPos, thrusterLookAtPos, 1, 0, 0, 1)
+		
+		--DrawSprite(thrusterSprite, Transform(worldPos, QuatLookAt(worldPos, worldSpaceNormal)), 0.3, 0.25, 1, 1, 1, 1, true, false)
+		
+		--DrawLine(worldPos, worldSpaceNormal)
 	end
 end
 
