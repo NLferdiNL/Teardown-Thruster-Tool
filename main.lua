@@ -6,6 +6,7 @@
 #include "datascripts/inputList.lua"
 
 thrusterClass = {
+	activeLastFrame = 0,
 	parentBody = nil,
 	localPosition = nil,
 	localNormal = nil,
@@ -19,9 +20,15 @@ thrusterClass = {
 	keyBackward = "n",
 }
 
+local drawThrusterSpriteActive = true
+
 local activeThrusters = {}
 
 local thrusterSprite = nil
+local thrusterFacingSpriteOff = nil
+local thrusterFacingSpriteOn = nil
+local thrusterFacingSpriteOnReverse = nil
+
 local toolDown = false
 
 local debugConsoleNeeded = false
@@ -36,6 +43,9 @@ function init()
 	SetBool("game.tool.nlthrustertool.enabled", true)
 	
 	thrusterSprite = LoadSprite("sprites/thruster.png")
+	thrusterFacingSpriteOff = LoadSprite("sprites/top-off.png")
+	thrusterFacingSpriteOn = LoadSprite("sprites/top-on.png")
+	thrusterFacingSpriteOnReverse = LoadSprite("sprites/top-on-reversed.png")
 end
 
 function tick(dt)
@@ -125,6 +135,8 @@ function allThrustersHandler(dt)
 			local currForwardKey = currentThruster.keyForward
 			local currBackwardKey = currentThruster.keyBackward
 			
+			local hasFired = false
+			
 			if InputDown(currForwardKey) then
 				if currentThruster.toggle and InputPressed(currForwardKey) then
 					if currentThruster.toggleInvert and currentThruster.toggledOn then
@@ -135,6 +147,7 @@ function allThrustersHandler(dt)
 					end
 				else
 					fireThruster(currentThruster, false)
+					hasFired = true
 				end
 			elseif InputDown(currBackwardKey) then
 				if currentThruster.toggle and InputPressed(currBackwardKey)  then
@@ -146,11 +159,17 @@ function allThrustersHandler(dt)
 					end
 				else
 					fireThruster(currentThruster, true)
+					hasFired = true
 				end
 			end
 		
 			if currentThruster.toggle and currentThruster.toggledOn then
 				fireThruster(currentThruster, currentThruster.toggleInvert)
+				hasFired = true
+			end
+			
+			if not hasFired then
+				currentThruster.activeLastFrame = 0
 			end
 			
 			drawThrusterSprite(currentThruster)
@@ -261,8 +280,10 @@ function fireThruster(thruster, invert)
 	setParticle()
 	
 	if invert then
+		thruster.activeLastFrame = -1
 		particleBlue()
 	else
+		thruster.activeLastFrame = 1
 		particleRed()
 	end
 	
@@ -290,61 +311,27 @@ end
 
 function drawThrusterSprite(thruster)
 	if thruster ~= nil then
-		--[[--Attempt 1
-		
-		local halfWayRot = QuatLookAt(halfWayPos, worldSpaceNormal)
-		
-		local halfwayTransform = Transform(halfWayPos, halfWayRot)
-		
-		local offPos = TransformToParentPoint(halfwayTransform, Vec(-0.5, 0, 0))--]]--
-	
 		local bodyTransform = GetBodyTransform(thruster.parentBody)
 	
-		local worldPos = TransformToParentPoint(bodyTransform, thruster.localPosition)
-		local worldSpaceNormal = TransformToParentPoint(bodyTransform, thruster.localNormal)
+		local localTransform = Transform(VecLerp(thruster.localPosition, thruster.localNormal, 0.05), QuatLookAt(thruster.localPosition, thruster.localNormal))
 		
-		local normalizedNormal = VecDir(worldPos, worldSpaceNormal)
+		local worldTransform = TransformToParentTransform(bodyTransform, localTransform)
 		
-		local localNormalizedNormal = VecDir(thruster.localPosition, thruster.localNormal)
+		local selectedSprite = thrusterFacingSpriteOff
 		
-		localNormalizedNormal[1] = round(localNormalizedNormal[1])
-		localNormalizedNormal[2] = round(localNormalizedNormal[2])
-		localNormalizedNormal[3] = round(localNormalizedNormal[3])
-		
-		local localOffsetVec = Vec(0, 0, -0.25)
-		
-		DebugPrint(VecToString(localNormalizedNormal))
-		
-		if localNormalizedNormal[1] == -1 then
-			localOffsetVec[3] = 0.25
-		elseif localNormalizedNormal[3] == -1 then
-			localOffsetVec[1] = -0.25
-			localOffsetVec[3] = 0
-		elseif localNormalizedNormal[3] == 1 then
-			localOffsetVec[1] = 0.25
-			localOffsetVec[3] = 0
+		if thruster.activeLastFrame == 1 then
+			selectedSprite = thrusterFacingSpriteOn
+		elseif thruster.activeLastFrame == -1 then
+			selectedSprite = thrusterFacingSpriteOnReverse
 		end
 		
-		local localPosOffsetted = VecAdd(thruster.localPosition, localOffsetVec)
-		
-		local offsetThruster = TransformToParentPoint(bodyTransform, localPosOffsetted)
-		
-		local thrusterLookAtPos = VecAdd(offsetThruster, VecScale(normalizedNormal, 0.25 / 2))
-		
-		local halfWayPos = VecLerp(worldPos, worldSpaceNormal, 0.25 / 2)
-		
-		local thrusterTransform = Transform(halfWayPos, QuatLookAt(halfWayPos, thrusterLookAtPos))
-		
-		DrawSprite(thrusterSprite, thrusterTransform, 0.3, 0.25, 1, 1, 1, 1, true, false)--]]--
-		
-		DrawLine(worldPos, offsetThruster)
-		DrawLine(offsetThruster, thrusterLookAtPos)
-		DrawLine(worldPos, worldSpaceNormal)
-		DrawLine(halfWayPos, thrusterLookAtPos, 1, 0, 0, 1)
-		
-		--DrawSprite(thrusterSprite, Transform(worldPos, QuatLookAt(worldPos, worldSpaceNormal)), 0.3, 0.25, 1, 1, 1, 1, true, false)
-		
-		--DrawLine(worldPos, worldSpaceNormal)
+		if drawThrusterSpriteActive then
+			DrawSprite(selectedSprite, worldTransform, 0.3, 0.25, 1, 1, 1, 1, true, false)
+		else
+			local worldPos = TransformToParentPoint(bodyTransform, thruster.localPosition)
+			local worldSpaceNormal = TransformToParentPoint(bodyTransform, thruster.localNormal)
+			DrawLine(worldPos, worldSpaceNormal)
+		end
 	end
 end
 
