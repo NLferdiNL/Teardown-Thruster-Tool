@@ -326,7 +326,7 @@ function drawThrusterSprite(thruster)
 		end
 		
 		if drawThrusterSpriteActive then
-			DrawSprite(selectedSprite, worldTransform, 0.3, 0.25, 1, 1, 1, 1, true, false)
+			DrawSprite(selectedSprite, worldTransform, 0.3, 0.3, 1, 1, 1, 1, true, false)
 		else
 			local worldPos = TransformToParentPoint(bodyTransform, thruster.localPosition)
 			local worldSpaceNormal = TransformToParentPoint(bodyTransform, thruster.localNormal)
