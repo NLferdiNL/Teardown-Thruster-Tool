@@ -40,10 +40,12 @@ function init()
 	RegisterTool("nlthrustertool", "Thruster Tool", "MOD/vox/thruster.vox")
 	SetBool("game.tool.nlthrustertool.enabled", true)
 	
-	thrusterSprite = LoadSprite("sprites/thruster.png")
-	thrusterFacingSpriteOff = LoadSprite("sprites/top-off.png")
-	thrusterFacingSpriteOn = LoadSprite("sprites/top-on.png")
-	thrusterFacingSpriteOnReverse = LoadSprite("sprites/top-on-reversed.png")
+	if drawThrusterSpriteActive then
+		thrusterSprite = LoadSprite("sprites/thruster.png")
+		thrusterFacingSpriteOff = LoadSprite("sprites/top-off.png")
+		thrusterFacingSpriteOn = LoadSprite("sprites/top-on.png")
+		thrusterFacingSpriteOnReverse = LoadSprite("sprites/top-on-reversed.png")
+	end
 end
 
 function tick(dt)
