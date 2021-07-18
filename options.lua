@@ -6,9 +6,6 @@ local modname = "Thruster Tool"
 
 function init()
 	saveFileInit()
-	for i = 1, 20 do
-	DebugPrint("")
-	end
 end
 
 function draw()
