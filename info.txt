@@ -1,4 +1,4 @@
-name = Thruster Tool (BETA)
+name = Thruster Tool
 author = NLferdiNL
 description = Thruster Tool from Garry's Mod
 tags = Tool

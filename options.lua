@@ -1,10 +1,14 @@
 #include "scripts/savedata.lua"
 #include "scripts/textbox.lua"
+#include "scripts/ui.lua"
 
 local modname = "Thruster Tool"
 
 function init()
 	saveFileInit()
+	for i = 1, 20 do
+	DebugPrint("")
+	end
 end
 
 function draw()
@@ -18,12 +22,13 @@ function draw()
 		UiButtonImageBox("ui/common/box-outline-6.png", 6, 6)
 		
 		if UiTextButton("Reset to default", 200, 50) then
-			-- DEFAULTS
+			drawThrusterSpriteActive = true
 		end
 		
 		UiTranslate(0, 60)
 		
 		if UiTextButton("Save and exit", 200, 50) then
+			SetBool(moddataPrefix .. "OldThrusterStyle", drawThrusterSpriteActive)
 			Menu()
 		end
 		
@@ -48,10 +53,12 @@ function draw()
 		
 		UiFont("regular.ttf", 26)
 		UiButtonImageBox("ui/common/box-outline-6.png", 6, 6)
-		UiText("Options coming soon!")
+		
+		drawToggle("Old thruster style: ", drawThrusterSpriteActive, function (i) drawThrusterSpriteActive = i end)
+		
 	UiPop()
 end
 
 function tick()
-	textboxClass.tick()
+	textboxClass_tick()
 end

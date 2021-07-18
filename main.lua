@@ -20,8 +20,6 @@ thrusterClass = {
 	keyBackward = "n",
 }
 
-local drawThrusterSpriteActive = true
-
 local activeThrusters = {}
 
 local thrusterSprite = nil
@@ -312,24 +310,28 @@ end
 function drawThrusterSprite(thruster)
 	if thruster ~= nil then
 		local bodyTransform = GetBodyTransform(thruster.parentBody)
-	
-		local localTransform = Transform(VecLerp(thruster.localPosition, thruster.localNormal, 0.05), QuatLookAt(thruster.localPosition, thruster.localNormal))
-		
-		local worldTransform = TransformToParentTransform(bodyTransform, localTransform)
-		
-		local selectedSprite = thrusterFacingSpriteOff
-		
-		if thruster.activeLastFrame == 1 then
-			selectedSprite = thrusterFacingSpriteOn
-		elseif thruster.activeLastFrame == -1 then
-			selectedSprite = thrusterFacingSpriteOnReverse
-		end
 		
 		if drawThrusterSpriteActive then
+			local localPos = VecLerp(thruster.localPosition, thruster.localNormal, 0.05)
+			local localRot = QuatLookAt(thruster.localPosition, thruster.localNormal)
+		
+			local localTransform = Transform(localPos, localRot)
+		
+			local worldTransform = TransformToParentTransform(bodyTransform, localTransform)
+			
+			local selectedSprite = thrusterFacingSpriteOff
+		
+			if thruster.activeLastFrame == 1 then
+				selectedSprite = thrusterFacingSpriteOn
+			elseif thruster.activeLastFrame == -1 then
+				selectedSprite = thrusterFacingSpriteOnReverse
+			end
+		
 			DrawSprite(selectedSprite, worldTransform, 0.3, 0.3, 1, 1, 1, 1, true, false)
 		else
 			local worldPos = TransformToParentPoint(bodyTransform, thruster.localPosition)
 			local worldSpaceNormal = TransformToParentPoint(bodyTransform, thruster.localNormal)
+		
 			DrawLine(worldPos, worldSpaceNormal)
 		end
 	end
