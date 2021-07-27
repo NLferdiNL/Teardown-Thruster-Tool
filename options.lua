@@ -51,7 +51,7 @@ function draw()
 		UiFont("regular.ttf", 26)
 		UiButtonImageBox("ui/common/box-outline-6.png", 6, 6)
 		
-		drawToggle("Old thruster style: ", drawThrusterSpriteActive, function (i) drawThrusterSpriteActive = i end)
+		drawToggle("New thruster style: ", drawThrusterSpriteActive, function (i) drawThrusterSpriteActive = i end)
 		
 	UiPop()
 end
