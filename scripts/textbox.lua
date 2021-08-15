@@ -1,5 +1,3 @@
-#include "scripts/utils.lua"
-
 textboxClass = {
 	inputNumbers = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "."},
 	inputLetters = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"},
@@ -28,10 +26,18 @@ end
 
 function textboxClass_render(me)
 UiPush()
+	UiFont("regular.ttf", 26)
+	
+	local labelString = me.name
+	local nameWidth, nameHeight = UiGetTextSize(labelString)
+	
 	UiButtonImageBox("ui/common/box-outline-6.png", 6, 6)
-	UiTranslate(-me.width - #me.name * 3, 0)
-	UiText(me.name .. ":")
-	UiTranslate(me.width + #me.name * 3, 0)
+	
+	UiPush()
+		UiAlign("center right")
+		UiTranslate(-nameWidth / 2 - me.width / 2, me.height / 5)
+		UiText(labelString)
+	UiPop()
 	
 	if textboxClass_checkMouseInRect(me) and not me.inputActive then
 		UiColor(1,1,0)
@@ -41,18 +47,25 @@ UiPush()
 		UiColor(1,1,1)
 	end
 	
-	local tempVal = me.value
-	
-	if tempVal == "" then
-		tempVal = " "
-	end
-	
-	if UiTextButton(tempVal, me.width, me.height) then
-		me.inputActive = not me.inputActive
-	end
-	
-	UiColor(1,1,1)
-	
+	UiPush()
+		local fontSize = getMaxTextSize(me.value, 26, me.width - 2)
+		
+		if fontSize ~= 26 then
+			DebugWatch("size", fontSize)
+		end
+		
+		UiFont("regular.ttf", fontSize)
+		
+		local tempVal = me.value
+		
+		if tempVal == "" then
+			tempVal = " "
+		end
+		
+		if UiTextButton(tempVal, me.width, me.height) then
+			me.inputActive = not me.inputActive
+		end
+	UiPop()
 UiPop()
 end
 
@@ -119,7 +132,10 @@ function textboxClass_setActiveState(me, newState)
 			
 			if me.limitsActive then
 				local tempVal = tonumber(me.value)
-				if tempVal < me.numberMin then
+				
+				if tempVal == nil then
+					me.value = me.numberMin
+				elseif tempVal < me.numberMin then
 					me.value = me.numberMin .. ""
 				elseif tempVal > me.numberMax then
 					me.value = me.numberMax .. ""
@@ -127,4 +143,20 @@ function textboxClass_setActiveState(me, newState)
 			end
 		end
 	end
+end
+
+function getMaxTextSize(text, fontSize, maxSize, minFontSize)
+	minFontSize = minFontSize or 1
+	UiPush()
+		UiFont("regular.ttf", fontSize)
+		
+		local currentSize = UiGetTextSize(text)
+		
+		while currentSize > maxSize and fontSize > minFontSize do
+			fontSize = fontSize - 0.1
+			UiFont("regular.ttf", fontSize)
+			currentSize = UiGetTextSize(text)
+		end
+	UiPop()
+	return fontSize, fontSize > minFontSize
 end
